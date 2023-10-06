@@ -1,0 +1,135 @@
+services:
+
+  elasticsearch:
+    image: elasticsearch:7.17.13
+    networks:
+      kafka:
+        aliases:
+          - elasticsearch.local
+    healthcheck:
+      test: echo srvr | nc elasticsearch.local 9200 || exit 1
+      retries: 20
+      interval: 10s
+    ports:
+      - 9200:9200
+    environment:
+      - cluster.name=elasticsearch
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.authc.api_key.enabled=true
+      - ELASTIC_PASSWORD=elastic
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.2.4
+    restart: always
+    networks:
+      kafka:
+        aliases:
+          - zookeeper.local
+    healthcheck:
+      test: echo srvr | nc zookeeper.local 2181 || exit 1
+      retries: 20
+      interval: 10s
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  broker:
+    image: confluentinc/cp-kafka:7.2.4
+    networks:
+      kafka:
+        aliases:
+          - broker.local
+    healthcheck:
+      test: echo srvr | nc -z broker.local 10091 || exit 1
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper.local:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker.local:10091
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  connect:
+    image: confluentinc/cp-kafka-connect:7.2.4
+    networks:
+      kafka:
+        aliases:
+          - connect.local
+    healthcheck:
+      interval: 10s
+      retries: 20
+      test: curl --fail --silent http://connect.local:8083/ --output /dev/null || exit 1
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./target/kafka-connect-plugins-1.0-jar-with-dependencies.jar:/usr/share/java/kafka-connect-plugins/kafka-connect-plugins-1.0-jar-with-dependencies.jar
+    environment:
+      CUB_CLASSPATH: '/usr/share/java/confluent-security/connect/*:/usr/share/java/kafka/*:/usr/share/java/cp-base-new/*'
+      CONNECT_BOOTSTRAP_SERVERS: broker.local:10091
+      CONNECT_LISTENERS: http://0.0.0.0:8083
+      CONNECT_GROUP_ID: "connect-cluster"
+      CONNECT_PRODUCER_CLIENT_ID: "connect-worker-producer"
+      CONNECT_PRODUCER_ENABLE_IDEMPOTENCE: 'true'
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-statuses
+      CONNECT_REPLICATION_FACTOR: 1
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect.local
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
+      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
+
+      # Allow overriding configs on the connector level
+      CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY: 'All'
+
+      # Reduce Connect memory utilization
+      KAFKA_JVM_PERFORMANCE_OPTS: -server -XX:+UseG1GC -XX:GCTimeRatio=1
+                  -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20
+                  -XX:MaxGCPauseMillis=10000 -XX:InitiatingHeapOccupancyPercent=35
+                  -XX:+ExplicitGCInvokesConcurrent
+                  -XX:MaxInlineLevel=15 -Djava.awt.headless=true
+
+  akhq:
+    image: tchiotludo/akhq
+    networks:
+      kafka:
+        aliases:
+          - akhq.local
+    healthcheck:
+      test: echo srvr | nc akhq.local 8080 || exit 1
+      retries: 20
+      interval: 10s
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "broker.local:10091"
+              connect:
+                - name: "connect"
+                  url: "http://connect.local:8083"
+
+    ports:
+      - 9000:8080
+    depends_on:
+      broker:
+        condition: service_healthy
+      connect:
+        condition: service_healthy
+
+networks:
+  kafka:

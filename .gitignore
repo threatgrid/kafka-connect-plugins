@@ -1,0 +1,14 @@
+.DS_Store
+.idea
+*.log
+/tmp/
+
+*.class
+/.classpath
+/.project
+/.settings/
+/build
+/target
+
+/.clj-kondo/.cache/
+/.lsp/.cache/
