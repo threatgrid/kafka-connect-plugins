@@ -7,15 +7,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
@@ -26,6 +30,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import co.elastic.clients.util.ContentType;
 
 public class ElasticsearchConnection {
     public final static Logger logger = LoggerFactory.getLogger(ElasticsearchConnection.class);
@@ -39,6 +44,7 @@ public class ElasticsearchConnection {
     private final int port;
     private final SSLContext sslContext;
     private final CredentialsProvider credentialsProvider;
+    private final Boolean compatibility;
 
     ElasticsearchConnection(ElasticsearchConnectionBuilder builder) {
         hosts = builder.hosts;
@@ -60,6 +66,8 @@ public class ElasticsearchConnection {
                           builder.keyStorePath,
                           builder.keyStorePassword);
 
+        compatibility = builder.compatibility;
+
         createConnection();
 
         this.maxConnectionAttempts = builder.maxConnectionAttempts;
@@ -75,6 +83,12 @@ public class ElasticsearchConnection {
                     }
                     if (sslContext != null) {
                         httpClientBuilder.setSSLContext(sslContext);
+                    }
+                    if (compatibility != null && compatibility) {
+                        httpClientBuilder.setDefaultHeaders(List.of(new BasicHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON)));
+                        httpClientBuilder.addInterceptorLast((HttpResponseInterceptor)
+                                                             (response, context) ->
+                                                             response.addHeader("X-Elastic-Product", "Elasticsearch"));
                     }
                     return httpClientBuilder;
                 })

@@ -50,6 +50,11 @@ public class ElasticsearchSourceConnectorConfig extends AbstractConfig {
     public final static String ES_TRUSTSTORE_PWD_CONF = "es.tls.truststore.password";
     private final static String ES_TRUSTSTORE_PWD_DOC = "Elasticsearch truststore password";
 
+    public final static String ES_COMPAT_CONF = "es.compatibility";
+    private final static String ES_COMPAT_DOC = "Enable elasticsearch compatibility.";
+    private final static String ES_COMPAT_DISPLAY = "Enable elasticsearch compatibility.";
+    private final static Boolean ES_COMPAT_DEFAULT = false;
+
     public static final String CONNECTION_ATTEMPTS_CONF = "connection.attempts";
     private static final String CONNECTION_ATTEMPTS_DOC = "Maximum number of attempts to retrieve a valid Elasticsearch connection.";
     private static final String CONNECTION_ATTEMPTS_DISPLAY = "Elasticsearch connection attempts";
@@ -115,7 +120,7 @@ public class ElasticsearchSourceConnectorConfig extends AbstractConfig {
             .define(ES_SCHEME_CONF,
                     Type.STRING,
                     ES_SCHEME_DEFAULT,
-                    Importance.MEDIUM,
+                    Importance.HIGH,
                     ES_SCHEME_DOC,
                     DATABASE_GROUP,
                     ++orderInGroup,
@@ -184,6 +189,15 @@ public class ElasticsearchSourceConnectorConfig extends AbstractConfig {
                     ++orderInGroup,
                     Width.SHORT,
                     ES_TRUSTSTORE_PWD_DOC)
+            .define(ES_COMPAT_CONF,
+                    Type.BOOLEAN,
+                    ES_COMPAT_DEFAULT,
+                    Importance.LOW,
+                    ES_COMPAT_DOC,
+                    DATABASE_GROUP,
+                    ++orderInGroup,
+                    Width.LONG,
+                    ES_COMPAT_DISPLAY)
             .define(CONNECTION_ATTEMPTS_CONF,
                     Type.INT,
                     CONNECTION_ATTEMPTS_DEFAULT,

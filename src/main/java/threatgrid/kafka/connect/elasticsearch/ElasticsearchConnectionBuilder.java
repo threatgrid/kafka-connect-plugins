@@ -15,6 +15,8 @@ public class ElasticsearchConnectionBuilder {
     String keyStorePath;
     String keyStorePassword;
 
+    Boolean compatibility;
+
     public ElasticsearchConnectionBuilder(String hosts, int port) {
         this.hosts = hosts;
         this.port = port;
@@ -54,6 +56,11 @@ public class ElasticsearchConnectionBuilder {
     public ElasticsearchConnectionBuilder withKeyStore(String path, String password) {
         this.keyStorePath = path;
         this.keyStorePassword = password;
+        return this;
+    }
+
+    public ElasticsearchConnectionBuilder withCompatibility(Boolean compatibility) {
+        this.compatibility = compatibility;
         return this;
     }
 

@@ -74,6 +74,12 @@ public class ElasticsearchSourceConnectorTask extends SourceTask {
             .withMaxAttempts(maxConnectionAttempts)
             .withBackoff(connectionRetryBackoff);
 
+        Boolean compatibility = config.getBoolean(ElasticsearchSourceConnectorConfig.ES_COMPAT_CONF);
+
+        if (compatibility != null) {
+            connectionBuilder.withCompatibility(compatibility);
+        }
+
         String truststore = config.getString(ElasticsearchSourceConnectorConfig.ES_TRUSTSTORE_CONF);
         String truststorePass = config.getString(ElasticsearchSourceConnectorConfig.ES_TRUSTSTORE_PWD_CONF);
         String keystore = config.getString(ElasticsearchSourceConnectorConfig.ES_KEYSTORE_CONF);
