@@ -1,4 +1,4 @@
-(ns elastic.dispose
+(ns threatgrid.elastic.dispose
   (:require
    [babashka.http-client :as http]))
 
