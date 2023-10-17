@@ -8,9 +8,10 @@
     <groupId>threatgrid</groupId>
     <artifactId>kafka-connect-plugins</artifactId>
     <description>Collection of Kafka Connect plugins</description>
-    <version>1.0</version>
+    <version>${revision}</version>
 
     <properties>
+        <revision>1.0</revision>
         <connect.api.version>3.3.2</connect.api.version>
         <junit.jupiter.version>5.9.2</junit.jupiter.version>
         <testcontainers.version>1.17.6</testcontainers.version>
