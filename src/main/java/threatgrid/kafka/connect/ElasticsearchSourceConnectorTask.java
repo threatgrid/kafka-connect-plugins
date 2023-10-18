@@ -35,6 +35,7 @@ public class ElasticsearchSourceConnectorTask extends SourceTask {
     private String searchAfterJson;
     private String queryJson;
     private String sortJson;
+    private String keyField;
     private String index;
     private int pollingMs;
     private int batchMaxRows;
@@ -55,6 +56,7 @@ public class ElasticsearchSourceConnectorTask extends SourceTask {
         index = config.getString(ElasticsearchSourceConnectorConfig.INDEX_NAME_CONF);
         searchAfterJson = getLastOffset(index);
         sortJson = config.getString(ElasticsearchSourceConnectorConfig.SORT_CONF);
+        keyField = config.getString(ElasticsearchSourceConnectorConfig.KEY_FIELD_CONF);
         queryJson = config.getString(ElasticsearchSourceConnectorConfig.QUERY_CONF);
         pollingMs = config.getInt(ElasticsearchSourceConnectorConfig.POLL_INTERVAL_MS_CONF);
         batchMaxRows = config.getInt(ElasticsearchSourceConnectorConfig.BATCH_MAX_ROWS_CONF);
@@ -135,10 +137,10 @@ public class ElasticsearchSourceConnectorTask extends SourceTask {
 
                     Map<String, String> sourcePartition = Collections.singletonMap("index", index);
                     Map<String, String> sourceOffset = Collections.singletonMap("search_after", searchAfterJson);
-                    String key = elasticDocument.get("id").textValue();
+                    String key = keyField != null ? elasticDocument.get(keyField).textValue() : null;
                     String value = mapper.writeValueAsString(elasticDocument);
 
-                    SourceRecord sourceRecord = new SourceRecord(sourcePartition, sourceOffset, topic, Schema.STRING_SCHEMA, key, Schema.STRING_SCHEMA, value);
+                    SourceRecord sourceRecord = new SourceRecord(sourcePartition, sourceOffset, topic, key != null ? Schema.STRING_SCHEMA : null, key, Schema.STRING_SCHEMA, value);
                     results.add(sourceRecord);
                 }
 

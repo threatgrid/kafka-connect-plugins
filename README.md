@@ -173,6 +173,17 @@ JSON-encoded string to be used as a `"query"` field in search requests.
 `sort`
 JSON-encoded string to be used as a `"sort"` field in search requests. It is important to add enough fields into the sorting criteria to allow search_after scroll for new documents.
 
+* Type: string
+* Default: null
+* Importance: high
+
+`key.field`
+(Optional) Field name to extract string value from the document to be used as a record key.
+
+* Type: string
+* Default: null
+* Importance: low
+
 ### Connector Configuration
 
 `poll.interval.ms`
