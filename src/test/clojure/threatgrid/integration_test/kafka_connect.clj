@@ -18,6 +18,7 @@
                                "key.converter"    "org.apache.kafka.connect.storage.StringConverter"
                                "query"            "{\"match_all\": {}}"
                                "sort"             "[{\"@timestamp\": {\"order\": \"asc\"}}, \"id\"]"
+                               "key.field"        "id"
                                "topic"            topic
                                "value.converter"  "org.apache.kafka.connect.storage.StringConverter"}})
               :content-type :json}))

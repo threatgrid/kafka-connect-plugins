@@ -76,12 +76,16 @@ public class ElasticsearchSourceConnectorConfig extends AbstractConfig {
     private static final String BATCH_MAX_ROWS_DISPLAY = "Max Documents Per Batch";
 
     public static final String QUERY_CONF = "query";
-    private static final String QUERY_DOC = "JSON encoded query to filter documents. Must be in the form of '{\"query\": ...}'";
+    private static final String QUERY_DOC = "JSON encoded query to filter documents. Must be in the form of '{\"query\": query}'";
     private static final String QUERY_DISPLAY = "Query";
 
     public static final String SORT_CONF = "sort";
-    private static final String SORT_DOC = "JSON encoded sorting criteria. Must be in the form of '{\"sort\": [...]}'. Sorting criteria will be used to enable smooth pagination via search_after.";
+    private static final String SORT_DOC = "JSON encoded sorting criteria. Must be in the form of '{\"sort\": sort}'. Sorting criteria will be used to enable smooth pagination via search_after.";
     private static final String SORT_DISPLAY = "Sort";
+
+    public static final String KEY_FIELD_CONF = "key.field";
+    private static final String KEY_FIELD_DOC = "Field name common for all documents sutable to be used as a record key.";
+    private static final String KEY_FIELD_DISPLAY = "Key field";
 
     public static final String INDEX_NAME_CONF = "index";
     private static final String INDEX_NAME_DOC = "Elasticsearch index name to fetch data from.";
@@ -247,7 +251,16 @@ public class ElasticsearchSourceConnectorConfig extends AbstractConfig {
                     REQUEST_GROUP,
                     ++orderInGroup,
                     Width.MEDIUM,
-                    SORT_DISPLAY);
+                    SORT_DISPLAY)
+            .define(KEY_FIELD_CONF,
+                    Type.STRING,
+                    null,
+                    Importance.LOW,
+                    KEY_FIELD_DOC,
+                    REQUEST_GROUP,
+                    ++orderInGroup,
+                    Width.MEDIUM,
+                    KEY_FIELD_DISPLAY);
     }
 
     private static void addConnectorOptions(ConfigDef config) {
