@@ -12,3 +12,5 @@
 
 /.clj-kondo/.cache/
 /.lsp/.cache/
+/.cpcache/
+/.nrepl-port

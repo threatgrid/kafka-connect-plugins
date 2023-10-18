@@ -48,11 +48,13 @@ services:
     depends_on:
       zookeeper:
         condition: service_healthy
+    ports:
+      - 11091:11091
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper.local:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker.local:10091
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker.local:10091,EXTERNAL://localhost:11091
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
@@ -69,6 +71,8 @@ services:
     depends_on:
       broker:
         condition: service_healthy
+    ports:
+      - 8083:8083
     volumes:
       - ./target/kafka-connect-plugins-1.0-jar-with-dependencies.jar:/usr/share/java/kafka-connect-plugins/kafka-connect-plugins-1.0-jar-with-dependencies.jar
     environment:
@@ -104,12 +108,14 @@ services:
 
   akhq:
     image: tchiotludo/akhq
+    profiles:
+      - dev
     networks:
       kafka:
         aliases:
           - akhq.local
     healthcheck:
-      test: echo srvr | nc akhq.local 8080 || exit 1
+      test: curl --fail --silent http://akhq.local:8080/ --output /dev/null || exit 1
       retries: 20
       interval: 10s
     environment:

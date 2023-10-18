@@ -1,4 +1,4 @@
-(ns elastic.setup
+(ns threatgrid.elastic.setup
   (:require
    [babashka.http-client :as http]
    [cheshire.core :as json]

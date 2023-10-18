@@ -47,6 +47,9 @@ public class ElasticsearchSourceConnectorTask extends SourceTask {
 
     @Override
     public void start(Map<String, String> props) {
+
+        log.info("starting elastic source task");
+
         config = new ElasticsearchSourceConnectorConfig(props);
         topic = config.getString(ElasticsearchSourceConnectorConfig.TOPIC_CONF);
         index = config.getString(ElasticsearchSourceConnectorConfig.INDEX_NAME_CONF);
@@ -156,6 +159,9 @@ public class ElasticsearchSourceConnectorTask extends SourceTask {
     // will be called by connect with a different thread than poll thread
     @Override
     public void stop() {
+
+        log.info("stopping elastic source task");
+
         stopping.set(true);
         if (elasticConnection != null) {
             elasticConnection.closeQuietly();

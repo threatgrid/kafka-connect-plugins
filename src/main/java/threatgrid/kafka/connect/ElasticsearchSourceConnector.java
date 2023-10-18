@@ -38,6 +38,7 @@ public class ElasticsearchSourceConnector extends SourceConnector {
 
     @Override
     public void start(Map<String, String> props) {
+        log.info("starting elastic source");
         try {
             configProperties = props;
             new ElasticsearchSourceConnectorConfig(props);
